@@ -132,3 +132,7 @@ dist
 
 # Wave files
 *.wav
+
+# Audio Files
+/Text2Audio/output_audio
+*metadata.json
