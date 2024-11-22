@@ -39,7 +39,7 @@ export class AudioProcessor {
         // Create and save individual WAV chunk
         const wavChunk = this.wavEncoder.createWavFile(audioContent);
         const chunkPath = this.fileManager.getChunkPath(this.chunkCounter);
-        await this.fileManager.saveWavFile(wavChunk, path.basename(chunkPath));
+        // await this.fileManager.saveWavFile(wavChunk, chunkPath);
         
         this.chunkCounter++;
         return audioContent.length;

@@ -12,7 +12,7 @@ dotenv.config();
 // This handles the incoming audio stream and saves it to files
 const processor = new AudioProcessor({
     sampleRate: 24000,          // Audio sample rate in Hz
-    outputDir: 'output_audio'   // Directory where audio files will be saved
+    outputDir: './Text2Audio/output_audio'   // Directory where audio files will be saved
 });
 
 // OpenAI WebSocket API endpoint for real-time text-to-speech

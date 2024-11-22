@@ -1,4 +1,5 @@
 // audioUtils.js
+import { NONAME } from 'dns';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
@@ -66,6 +67,7 @@ export class WavEncoder {
 export class AudioFileManager {
     constructor(baseDir = 'output_audio') {
         this.baseDir = baseDir;
+        this.baseChunkDir = "";
         this.timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         this.ensureDirectoryExists();
     }
@@ -79,10 +81,11 @@ export class AudioFileManager {
             fs.mkdirSync(this.baseDir);
         }
         
-        const chunksDir = path.join(this.baseDir, `chunks_${this.timestamp}`);
-        if (!fs.existsSync(chunksDir)) {
-            fs.mkdirSync(chunksDir);
-        }
+        // const chunksDir = path.join(this.baseDir, `chunks_${this.timestamp}`);
+        // this.baseChunkDir = chunksDir;
+        // if (!fs.existsSync(chunksDir)) {
+        //     fs.mkdirSync(chunksDir);
+        // }
     }
 
     /**
@@ -115,7 +118,7 @@ export class AudioFileManager {
      * @returns {string} Path to the chunk file
      */
     getChunkPath(chunkIndex) {
-        return path.join(this.baseDir, `chunks_${this.timestamp}`, `chunk_${chunkIndex.toString().padStart(5, '0')}.wav`);
+        return path.join(this.baseChunkDir, `chunk_${chunkIndex.toString().padStart(5, '0')}.wav`);
     }
 
     /**
