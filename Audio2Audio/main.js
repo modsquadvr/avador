@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import { AudioProcessor } from '../Text2Audio/audioProcessor.js';
 import { AudioStreamProcessor } from './audioStreamProcessor.js';
+import { sessionConfig } from './config/sessionConfig.js';
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ const audioStreamProcessor = new AudioStreamProcessor(ws);
 
 ws.on("open", async function open() {
     console.log("Connected to server.");
+    
+    // Send session configuration
+    ws.send(JSON.stringify(sessionConfig));
     
     // Read and process input audio file
     const inputAudio = fs.readFileSync('./Audio2Audio/input_audio/sample.wav');
