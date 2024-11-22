@@ -19,6 +19,7 @@ Implement
     - [ ] On/Off toggle functionality
 - [ ] Multiple voice support
 - [ ] Chunk to audio conversion
+- [ ] Function calling for RAG
 - [ ] Documentation
     - [ ] Event documentation
     - [ ] README updates

@@ -4,6 +4,7 @@ import WebSocket from "ws";
 import dotenv from 'dotenv';
 import { AudioProcessor } from './audioProcessor.js';
 import { conversationEvents } from './config/conversationEvents.js';
+import { sessionConfig } from './config/sessionConfig.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -29,7 +30,8 @@ const ws = new WebSocket(url, {
 // Handle successful WebSocket connection
 ws.on("open", function open() {
     console.log("Connected to server.");
-    
+    // Send session configuration
+    ws.send(JSON.stringify(sessionConfig));
     // Use the imported event configuration
     ws.send(JSON.stringify(conversationEvents.sampleMessage));
     ws.send(JSON.stringify({type: 'response.create'}));
