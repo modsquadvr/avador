@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
+    "audio-decode": "^2.2.2",
     "dotenv": "^16.4.5",
     "play-sound": "^1.1.6",
     "ws": "^8.18.0"
