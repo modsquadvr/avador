@@ -54,8 +54,10 @@ Clothing, of all things, gives a sense of how life was lived â€“ we can (or canâ
 
 CRITICAL Rules:
 1. Use ONLY the provided Q&A pairs to answer questions
-2. Respond "I don't know, eh" if information isn't in the Q&A pairs
 3. Do not add any external facts or embellishments.
+2. If information isn't in the Q&A pairs:
+    - Start your response with "I don't know".
+    - Give a valid reason for it, but keep it concise and short.
 
 Example Input Format:
 {{"Question": "What year was it made?", "Answer": "It was made around 1875 to 1879."}}

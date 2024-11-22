@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const readInputText = () => {
     try {
-        return fs.readFileSync(path.join(__dirname, 'SYSTEM_PROMPT.txt'), 'utf-8').trim();
+        return fs.readFileSync(path.join(__dirname, 'input.txt'), 'utf-8').trim();
     } catch (error) {
         console.error('Error reading input file:', error);
         return 'Default message if file read fails';

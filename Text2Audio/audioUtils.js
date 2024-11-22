@@ -127,7 +127,7 @@ export class AudioFileManager {
      * @returns {Promise<void>}
      */
     async appendToLog(data) {
-        const logPath = path.join(this.baseDir, 'output.json');
+        const logPath = path.join(this.baseDir, this.timestamp + '_log.json');
         await appendFileAsync(logPath, JSON.stringify(data, null, 2) + ',\n');
     }
 }
