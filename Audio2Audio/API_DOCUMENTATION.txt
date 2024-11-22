@@ -1,0 +1,82 @@
+
+REAL-TIME AUDIO PROCESSING API DOCUMENTATION
+==========================================
+
+1. WebSocket Connection
+----------------------
+URL: wss://api.openai.com/v1/realtime
+Model: gpt-4o-realtime-preview-2024-10-01
+Headers Required:
+- Authorization: Bearer <OPENAI_API_KEY>
+- OpenAI-Beta: realtime=v1
+
+2. Data Flow
+-----------
+Client → Server:
+1. Initial audio file:
+   {
+     "type": "conversation.item.create",
+     "item": {
+       "type": "message",
+       "role": "user",
+       "content": [{
+         "type": "input_audio",
+         "audio": "<base64_encoded_audio>"
+       }]
+     }
+   }
+
+2. Response request:
+   {
+     "type": "response.create"
+   }
+
+Server → Client:
+1. Audio chunks:
+   {
+     "type": "response.audio.delta",
+     "delta": "<base64_encoded_audio_chunk>"
+   }
+
+2. Completion signal:
+   {
+     "type": "response.audio.done"
+   }
+
+3. Audio Processing Details
+--------------------------
+Input Format:
+- WAV file format
+- 16-bit PCM encoding
+- Sample rate: 24000 Hz
+- Mono channel
+
+Processing Steps:
+1. Audio file reading
+2. Decoding to Float32Array
+3. Converting to PCM16
+4. Base64 encoding
+5. Chunked transmission
+6. Reception and reconstruction
+
+4. File Structure
+----------------
+input_audio/
+  - Storage for input audio files
+output_audio/
+  - Processed audio output
+  - JSON metadata files
+  - Processing logs
+
+5. Error Codes & Handling
+------------------------
+- Connection errors: WebSocket connection issues
+- Processing errors: Audio encoding/decoding failures
+- File system errors: Read/write operations
+
+6. Best Practices
+----------------
+- Keep audio files under 10MB for optimal processing
+- Monitor WebSocket connection status
+- Handle all error cases
+- Implement proper cleanup on connection close
