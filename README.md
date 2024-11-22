@@ -22,9 +22,10 @@ Implement
 - [ ] Chunk to audio conversion
 - [ ] Function calling for RAG
 - [ ] Documentation
-    - [ ] Event documentation
+    - [x] Event documentation for Text2Audio
+    - [x] Event documentation for Audio2Audio
     - [ ] README updates
 - [ ] Backend development
-    - [ ] WebSocket implementation
-    - [ ] Frontend integration testing
+    - [x] WebSocket implementation
+    - [x] Frontend integration testing - Super simplistic
     - [ ] Unity Frontend integration testing

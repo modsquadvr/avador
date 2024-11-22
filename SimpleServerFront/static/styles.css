@@ -1,0 +1,44 @@
+#console {
+    background-color: #1e1e1e;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 20px;
+    height: 80vh;
+    overflow: hidden;
+}
+
+#log {
+    height: 100%;
+    overflow-y: auto;
+    font-family: monospace;
+    color: #0f0;
+    white-space: pre-wrap;
+}
+
+.log-item {
+    margin: 5px 0;
+    padding: 5px;
+    border-bottom: 1px solid #333;
+    font-family: 'Consolas', monospace;
+    white-space: pre;
+}
+
+.json-key {
+    color: #9cdcfe;
+}
+
+.json-string {
+    color: #ce9178;
+}
+
+.json-number {
+    color: #b5cea8;
+}
+
+.json-boolean {
+    color: #569cd6;
+}
+
+.json-null {
+    color: #569cd6;
+}
