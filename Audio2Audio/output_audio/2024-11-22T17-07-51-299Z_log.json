@@ -803,3 +803,14 @@
   "output_index": 0,
   "content_index": 0
 },
+{
+  "type": "error",
+  "event_id": "event_AWRelk98sTzgHcKYWN7Fi",
+  "error": {
+    "type": "invalid_request_error",
+    "code": "session_expired",
+    "message": "Your session hit the maximum duration of 15 minutes.",
+    "param": null,
+    "event_id": null
+  }
+},

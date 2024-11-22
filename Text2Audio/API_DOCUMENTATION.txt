@@ -1,5 +1,6 @@
-REAL-TIME AUDIO PROCESSING API DOCUMENTATION
-==========================================
+
+REAL-TIME TEXT-TO-AUDIO PROCESSING API DOCUMENTATION
+=================================================
 
 1. WebSocket Connection
 ----------------------
@@ -11,7 +12,7 @@ Headers Required:
 
 2. Session Configuration
 -----------------------
-File: session_config.js
+File: sessionConfig.js
 Configuration includes:
 - Event ID tracking
 - Session type specification
@@ -19,7 +20,6 @@ Configuration includes:
 - System instructions (loaded from SYSTEM_PROMPT.txt)
 - Voice settings (default: "ash")
 - Audio format specifications (pcm16)
-- Input audio transcription settings
 - Turn detection parameters:
   * Server VAD type
   * Threshold: 0.5
@@ -39,15 +39,15 @@ Client → Server:
      "session": <session_config_object>
    }
 
-2. Initial audio file:
+2. Text input:
    {
      "type": "conversation.item.create",
      "item": {
        "type": "message",
        "role": "user",
        "content": [{
-         "type": "input_audio",
-         "audio": "<base64_encoded_audio>"
+         "type": "input_text",
+         "text": "<text_content>"
        }]
      }
    }
@@ -69,48 +69,37 @@ Server → Client:
      "type": "response.audio.done"
    }
 
-4. Audio Processing Details
---------------------------
-Input Format:
+4. Audio Output Details
+----------------------
+Output Format:
 - WAV file format
 - 16-bit PCM encoding
 - Sample rate: 24000 Hz
 - Mono channel
 
 Processing Steps:
-1. Audio file reading
-2. Decoding to Float32Array
-3. Converting to PCM16
-4. Base64 encoding
-5. Chunked transmission
-6. Reception and reconstruction
+1. Text input processing
+2. Server-side speech synthesis
+3. Audio chunk reception
+4. Base64 decoding
+5. WAV file construction
+6. Final audio file generation
 
 5. File Structure
 ----------------
-session_config.js
+main.js
+  - WebSocket client and main processing logic
+sessionConfig.js
   - Session configuration and parameters
+conversationEvents.js
+  - Event handling and message formatting
+audioProcessor.js
+  - Audio processing and file management
+audioUtils.js
+  - WAV encoding and file operations
 SYSTEM_PROMPT.txt
   - System instructions for the AI
-input_audio/
-  - Storage for input audio files
 output_audio/
-  - Processed audio output
+  - Generated audio output
   - JSON metadata files
   - Processing logs
-
-6. Error Codes & Handling
-------------------------
-- Connection errors: WebSocket connection issues
-- Processing errors: Audio encoding/decoding failures
-- File system errors: Read/write operations
-- Configuration errors: Session update failures
-
-7. Best Practices
-----------------
-- Keep audio files under 10MB for optimal processing
-- Monitor WebSocket connection status
-- Handle all error cases
-- Implement proper cleanup on connection close
-- Regularly validate session configuration
-- Maintain system prompt file
-- Monitor turn detection parameters
