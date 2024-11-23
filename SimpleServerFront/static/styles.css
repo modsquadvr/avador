@@ -42,3 +42,32 @@
 .json-null {
     color: #569cd6;
 }
+
+.input-container {
+    margin: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background-color: #1e1e1e;
+    color: #fff;
+    font-family: 'Consolas', monospace;
+}
+
+#sendButton {
+    padding: 10px 20px;
+    background-color: #0f0;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#sendButton:hover {
+    background-color: #0d0;
+}

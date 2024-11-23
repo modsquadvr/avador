@@ -54,3 +54,22 @@ ws.onclose = () => {
 ws.onerror = (error) => {
     appendLog(`WebSocket error: ${error}`);
 };
+
+// Add button click handler
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+
+sendButton.addEventListener('click', () => {
+    const message = messageInput.value.trim();
+    if (message) {
+        ws.send(message);
+        messageInput.value = '';
+    }
+});
+
+// Add enter key handler
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendButton.click();
+    }
+});

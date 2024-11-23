@@ -28,4 +28,5 @@ Implement
 - [ ] Backend development
     - [x] WebSocket implementation
     - [x] Frontend integration testing - Super simplistic
+    - [ ] Make a button for sending the request on WebSocket from the FrontEnd
     - [ ] Unity Frontend integration testing
