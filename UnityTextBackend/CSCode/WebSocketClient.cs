@@ -1,148 +1,244 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
+using TMPro;
 
 public class WebSocketClient : MonoBehaviour
 {
-    // WebSocket connection instance
+    // UI References
+    [SerializeField] private TMP_InputField messageInput;
+    [SerializeField] private Button sendButton;
+    [SerializeField] private Button connectButton;
+    [SerializeField] private Button stopButton;
+
+    // WebSocket connection
     private ClientWebSocket webSocket;
-
-    // Server URL from the documentation
-    private readonly string serverUrl = "ws://localhost:8001/unity";
-
-    // Buffer for receiving messages
-    private readonly byte[] receiveBuffer = new byte[1024];
-
-    // Cancellation token to handle cleanup
-    private CancellationTokenSource cancellationTokenSource;
+    private const string SERVER_URL = "ws://localhost:8001/unity";
+    private const string LOG_FILE_PATH = "logs.txt";
+    private CancellationTokenSource cancellationSource;
+    private bool isConnected = false;
 
     private void Start()
     {
-        // Initialize the WebSocket connection when the script starts
-        _ = InitializeWebSocketConnection();
+        // Setup UI button listeners
+        sendButton.onClick.AddListener(OnSendButtonClick);
+        connectButton.onClick.AddListener(OnConnectButtonClick);
+        stopButton.onClick.AddListener(OnStopButtonClick);
+
+        // Initial UI state
+        sendButton.interactable = false;
+        stopButton.interactable = false;
+        connectButton.interactable = true;
     }
 
-    private async Task InitializeWebSocketConnection()
+    private void OnConnectButtonClick()
     {
+        InitializeWebSocket();
+        ConnectToServer();
+    }
+
+    private void OnStopButtonClick()
+    {
+        StopWebSocketConnection();
+    }
+
+    private void InitializeWebSocket()
+    {
+        webSocket = new ClientWebSocket();
+        cancellationSource = new CancellationTokenSource();
+    }
+
+    private async void ConnectToServer()
+    {
+        if (isConnected)
+        {
+            Debug.LogWarning("Already connected to WebSocket server");
+            return;
+        }
+
         try
         {
-            // Create new instances
-            webSocket = new ClientWebSocket();
-            cancellationTokenSource = new CancellationTokenSource();
+            connectButton.interactable = false;
+            await webSocket.ConnectAsync(new Uri(SERVER_URL), cancellationSource.Token);
 
-            Debug.Log("Attempting to connect to WebSocket server...");
+            Debug.Log("Connected to WebSocket server");
+            WriteToFile("Connected to WebSocket server");
 
-            // Connect to the WebSocket server
-            await webSocket.ConnectAsync(new Uri(serverUrl), cancellationTokenSource.Token);
-
-            Debug.Log("Successfully connected to WebSocket server!");
+            // Update UI state
+            isConnected = true;
+            sendButton.interactable = true;
+            stopButton.interactable = true;
 
             // Start listening for messages
-            _ = ReceiveMessagesAsync();
+            _ = ReceiveMessages();
         }
         catch (Exception e)
         {
-            Debug.LogError($"Failed to connect to WebSocket server: {e.Message}");
+            Debug.LogError($"Connection error: {e.Message}");
+            WriteToFile($"Connection error: {e.Message}");
+            ResetConnectionState();
         }
     }
 
-    private async Task ReceiveMessagesAsync()
+    private async Task ReceiveMessages()
+    {
+        while (webSocket != null && webSocket.State == WebSocketState.Open)
+        {
+            try
+            {
+                var buffer = new byte[4096*16];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationSource.Token);
+
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    Debug.Log($"Received: {message}");
+                    WriteToFile($"Received: {message}");
+                }
+            }
+            catch (Exception e)
+            {
+                if (!cancellationSource.Token.IsCancellationRequested)
+                {
+                    Debug.LogError($"Error receiving message: {e.Message}");
+                    WriteToFile($"Error receiving message: {e.Message}");
+                }
+                break;
+            }
+        }
+    }
+
+    private void WriteToFile(string message)
     {
         try
         {
-            while (webSocket.State == WebSocketState.Open)
-            {
-                // Create a buffer to store the received message
-                var receiveResult = await webSocket.ReceiveAsync(
-                    new ArraySegment<byte>(receiveBuffer),
-                    cancellationTokenSource.Token
-                );
-
-                if (receiveResult.MessageType == WebSocketMessageType.Text)
-                {
-                    // Convert the received bytes to a string
-                    string message = Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count);
-
-                    // Log the received message
-                    Debug.Log($"Received message: {message}");
-                }
-                else if (receiveResult.MessageType == WebSocketMessageType.Close)
-                {
-                    // Handle WebSocket closure
-                    Debug.Log("WebSocket connection closed by server");
-                    await CloseConnection();
-                    break;
-                }
-            }
+            string timestampedMessage = $"[{DateTime.Now}] {message}{Environment.NewLine}";
+            File.AppendAllText(Path.Combine(Application.dataPath, LOG_FILE_PATH), timestampedMessage);
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error receiving message: {e.Message}");
-            await CloseConnection();
+            Debug.LogError($"Error writing to log file: {e.Message}");
         }
     }
 
-    // Method to send messages to the server
-    public async Task SendMessageAsync(string message)
+    private void OnSendButtonClick()
     {
+        if (string.IsNullOrEmpty(messageInput.text)) return;
+        _ = SendMessage(messageInput.text);
+        messageInput.text = ""; // Clear input field after sending
+    }
+
+    private async Task SendMessage(string message)
+    {
+        if (webSocket?.State != WebSocketState.Open)
+        {
+            Debug.LogError("WebSocket is not connected");
+            WriteToFile("WebSocket is not connected");
+            return;
+        }
+
         try
         {
-            if (webSocket.State != WebSocketState.Open)
-            {
-                Debug.LogWarning("WebSocket is not connected. Attempting to reconnect...");
-                await InitializeWebSocketConnection();
-                return;
-            }
-
-            // Convert string message to bytes
             byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-
-            // Send the message
             await webSocket.SendAsync(
                 new ArraySegment<byte>(messageBytes),
                 WebSocketMessageType.Text,
                 true,
-                cancellationTokenSource.Token
+                cancellationSource.Token
             );
+
+            Debug.Log($"Sent: {message}");
+            WriteToFile($"Sent: {message}");
         }
         catch (Exception e)
         {
             Debug.LogError($"Error sending message: {e.Message}");
+            WriteToFile($"Error sending message: {e.Message}");
         }
     }
 
-    private async Task CloseConnection()
+    private async void StopWebSocketConnection()
     {
+        if (webSocket != null && webSocket.State == WebSocketState.Open)
+        {
+            try
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing connection", CancellationToken.None);
+                Debug.Log("WebSocket connection closed");
+                WriteToFile("WebSocket connection closed");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error closing connection: {e.Message}");
+                WriteToFile($"Error closing connection: {e.Message}");
+            }
+            finally
+            {
+                CleanupWebSocket();
+            }
+        }
+        ResetConnectionState();
+    }
+
+    private void CleanupWebSocket()
+    {
+        if (cancellationSource != null)
+        {
+            cancellationSource.Cancel();
+            cancellationSource.Dispose();
+            cancellationSource = null;
+        }
+
         if (webSocket != null)
         {
-            // Close the WebSocket connection if it's still open
-            if (webSocket.State == WebSocketState.Open)
-            {
-                await webSocket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Connection closed by client",
-                    CancellationToken.None
-                );
-            }
-
-            // Dispose of the WebSocket instance
             webSocket.Dispose();
+            webSocket = null;
         }
+    }
+
+    private void ResetConnectionState()
+    {
+        isConnected = false;
+        connectButton.interactable = true;
+        stopButton.interactable = false;
+        sendButton.interactable = false;
     }
 
     private void OnDestroy()
     {
-        // Ensure cleanup when the GameObject is destroyed
-        cancellationTokenSource?.Cancel();
-        _ = CloseConnection();
+        StopWebSocketConnection();
     }
-
-    // Example method to test sending a message
-    public void TestSendMessage(string testMessage)
+    private async Task SendWebSocketMessage(string message)
     {
-        _ = SendMessageAsync(testMessage);
+        if (webSocket?.State != WebSocketState.Open)
+        {
+            Debug.LogError("WebSocket is not connected");
+            WriteToFile("WebSocket is not connected");
+            return;
+        }
+
+        try
+        {
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+            await webSocket.SendAsync(
+                new ArraySegment<byte>(messageBytes),
+                WebSocketMessageType.Text,
+                true,
+                cancellationSource.Token
+            );
+
+            Debug.Log($"Sent: {message}");
+            WriteToFile($"Sent: {message}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error sending message: {e.Message}");
+            WriteToFile($"Error sending message: {e.Message}");
+        }
     }
 }
