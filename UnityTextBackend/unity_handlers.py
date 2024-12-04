@@ -1,4 +1,3 @@
-
 import json
 import asyncio
 from fastapi import WebSocket
@@ -33,6 +32,7 @@ class UnityWebSocketHandler:
         try:
             while True:
                 response = await self.openai_ws.recv()
+                print(f"[OpenAI -> Unity] Raw message received: {response}")
                 data = json.loads(response)
                 
                 # Add metadata for Unity
@@ -43,7 +43,7 @@ class UnityWebSocketHandler:
                 }
                 
                 await self.websocket.send_json(unity_formatted)
-                print(f"[Unity] Relayed OpenAI message: {data.get('type')}")
+                print(f"[OpenAI -> Unity] Formatted message sent: {json.dumps(unity_formatted)}")
                 
         except Exception as e:
             print(f"[Unity] Error in receiving messages: {e}")
@@ -52,12 +52,16 @@ class UnityWebSocketHandler:
         try:
             while True:
                 message = await self.websocket.receive_text()
-                print(f"[Unity] Received message: {message}")
+                print(f"[Unity -> OpenAI] Raw message received: {message}")
                 
                 # Format and send to OpenAI
                 formatted_msg = MessageHandler.create_user_message(message)
+                print(f"[Unity -> OpenAI] Formatted message: {json.dumps(formatted_msg)}")
                 await self.openai_ws.send(json.dumps(formatted_msg))
-                await self.openai_ws.send(json.dumps({"type": "response.create"}))
+                
+                create_response_msg = {"type": "response.create"}
+                print(f"[Unity -> OpenAI] Sending response create: {json.dumps(create_response_msg)}")
+                await self.openai_ws.send(json.dumps(create_response_msg))
                 
         except Exception as e:
             print(f"[Unity] Error handling messages: {e}")
