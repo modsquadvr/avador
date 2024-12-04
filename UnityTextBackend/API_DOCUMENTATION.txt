@@ -1,0 +1,80 @@
+
+Unity Text Backend - WebSocket API Documentation
+=============================================
+
+Overview
+--------
+This backend system provides a WebSocket-based relay server that connects Unity clients 
+to OpenAI's real-time API. It facilitates real-time communication between Unity applications 
+and OpenAI's language models.
+
+System Components
+---------------
+1. Main Application (main.py)
+   - FastAPI server running on port 8001
+   - Provides WebSocket endpoint at "/unity"
+   - Handles incoming WebSocket connections from Unity clients
+
+2. Unity WebSocket Handler (unity_handlers.py)
+   - Manages bidirectional communication between Unity and OpenAI
+   - Handles connection lifecycle
+   - Formats messages between both systems
+   - Provides error handling and cleanup
+
+3. Message Utilities (message_utils.py)
+   - Provides message formatting utilities
+   - Structures messages in OpenAI-compatible format
+
+4. OpenAI Connection (connections.py)
+   - Manages WebSocket connection to OpenAI's real-time API
+   - Handles authentication using API keys from environment variables
+
+WebSocket Endpoint
+----------------
+URL: ws://localhost:8001/unity
+
+Message Flow
+-----------
+1. Unity -> Backend:
+   - Send text messages as plain strings
+   - Messages are automatically formatted for OpenAI
+
+2. Backend -> Unity:
+   - Receives JSON formatted responses from OpenAI
+   - Adds metadata (source, timestamp)
+   - Forwards to Unity client
+
+Data Formats
+-----------
+1. Messages from Unity:
+   - Plain text strings
+
+2. Messages to Unity:
+   {
+     "source": "openai",
+     "timestamp": <unix_timestamp>,
+     "data": <openai_response_object>
+   }
+
+Environment Requirements
+----------------------
+1. Environment Variables:
+   - OPENAI_API_KEY: Your OpenAI API key
+
+2. Dependencies:
+   - FastAPI
+   - WebSockets
+   - python-dotenv
+   - asyncio
+
+Error Handling
+-------------
+- The system includes comprehensive error handling for WebSocket connections
+- Automatic cleanup of connections on errors or disconnection
+- Logging of errors and connection status
+
+Security Notes
+-------------
+- API keys are managed through environment variables
+- WebSocket connections are handled securely
+- Input validation is performed on incoming messages
