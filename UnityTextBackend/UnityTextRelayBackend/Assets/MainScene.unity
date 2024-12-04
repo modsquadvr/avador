@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 253113512}
   - component: {fileID: 253113511}
   - component: {fileID: 253113515}
+  - component: {fileID: 253113516}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -241,6 +242,18 @@ MonoBehaviour:
   sendButton: {fileID: 1321595847}
   connectButton: {fileID: 1453489142}
   stopButton: {fileID: 1022816846}
+--- !u!114 &253113516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253113510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e53e61ceed596cc46a60851dc882345c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &574700341
 GameObject:
   m_ObjectHideFlags: 0

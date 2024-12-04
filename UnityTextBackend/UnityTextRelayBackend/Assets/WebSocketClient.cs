@@ -27,6 +27,7 @@ public class WebSocketClient : MonoBehaviour
     [SerializeField] private Button connectButton;
     [SerializeField] private Button stopButton;
 
+    private AudioStreamPlayer audioPlayer;
     private ClientWebSocket webSocket;
     private const string SERVER_URL = "ws://localhost:8001/unity";
     private const string LOG_FILE_PATH = "logs.txt";
@@ -35,6 +36,9 @@ public class WebSocketClient : MonoBehaviour
 
     private void Start()
     {
+        // Add AudioStreamPlayer component
+        audioPlayer = gameObject.AddComponent<AudioStreamPlayer>();
+
         sendButton.onClick.AddListener(OnSendButtonClick);
         connectButton.onClick.AddListener(OnConnectButtonClick);
         stopButton.onClick.AddListener(OnStopButtonClick);
@@ -106,19 +110,16 @@ public class WebSocketClient : MonoBehaviour
 
                     try
                     {
-                        // Parse and convert back to JSON string
                         WebSocketMessage message = JsonUtility.FromJson<WebSocketMessage>(rawMessage);
-                        string jsonMessage = JsonUtility.ToJson(message);
-                        string delta = "";
 
-                        if (message.type == "response.audio.delta")
+                        if (message.type == "response.audio.delta" && !string.IsNullOrEmpty(message.delta))
                         {
-                            delta = message.delta;
-                            Debug.Log($"Delta: {delta.Substring(0, Math.Min(delta.Length, 200))}");
+                            // Process the audio delta through AudioStreamPlayer
+                            audioPlayer.ProcessAudioChunk(message.delta);
+                            Debug.Log($"Processing audio chunk of length: {message.delta.Length}");
                         }
 
-                        //Debug.Log(jsonMessage);
-                        WriteToFile(jsonMessage);
+                        WriteToFile(JsonUtility.ToJson(message));
                     }
                     catch (Exception jsonEx)
                     {
