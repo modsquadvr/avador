@@ -2,6 +2,7 @@ import json
 import asyncio
 from fastapi import WebSocket
 from colorama import init, Fore, Style
+from log_manager import LogManager
 
 # Add parent directory to path to import from app
 from connections import OpenAIConnection
@@ -19,6 +20,7 @@ class UnityWebSocketHandler:
         self.openai_ws = None
         self.receiver_task = None
         self.is_connected = False
+        self.log_manager = LogManager()
 
     async def handle_connection(self):
         await self.websocket.accept()
@@ -37,12 +39,15 @@ class UnityWebSocketHandler:
         finally:
             if self.is_connected:
                 await self.cleanup()
+                self.log_manager.cleanup()
 
     async def receive_openai_messages(self):
         try:
             while True:
                 response = await self.openai_ws.recv()
                 print(f"{Fore.GREEN}[OpenAI -> Unity] Raw message received: {truncate_message(response)}{Style.RESET_ALL}")
+                self.log_manager.log_message(self.log_manager.openai_to_python, response)
+                
                 data = json.loads(response)
                 
                 # Add metadata for Unity
@@ -52,8 +57,10 @@ class UnityWebSocketHandler:
                     "data": data
                 }
                 
-                await self.websocket.send_json(unity_formatted)
-                print(f"{Fore.GREEN}[OpenAI -> Unity] Formatted message sent: {truncate_message(json.dumps(unity_formatted))}{Style.RESET_ALL}")
+                # await self.websocket.send_json(unity_formatted)
+                await self.websocket.send_json(data)
+                self.log_manager.log_message(self.log_manager.python_to_unity, json.dumps(data))
+                print(f"{Fore.GREEN}[OpenAI -> Unity] Message sent: {truncate_message(json.dumps(data))}{Style.RESET_ALL}")
                 
         except Exception as e:
             print(f"{Fore.RED}[Unity] Error in receiving messages: {e}{Style.RESET_ALL}")
@@ -62,14 +69,17 @@ class UnityWebSocketHandler:
         try:
             while True:
                 message = await self.websocket.receive_text()
+                self.log_manager.log_message(self.log_manager.unity_to_python, message)
                 print(f"{Fore.BLUE}[Unity -> OpenAI] Raw message received: {truncate_message(message)}{Style.RESET_ALL}")
                 
                 # Format and send to OpenAI
                 formatted_msg = MessageHandler.create_user_message(message)
+                self.log_manager.log_message(self.log_manager.python_to_openai, json.dumps(formatted_msg))
                 print(f"{Fore.BLUE}[Unity -> OpenAI] Formatted message: {truncate_message(json.dumps(formatted_msg))}{Style.RESET_ALL}")
                 await self.openai_ws.send(json.dumps(formatted_msg))
                 
                 create_response_msg = {"type": "response.create"}
+                self.log_manager.log_message(self.log_manager.python_to_openai, json.dumps(create_response_msg))
                 print(f"{Fore.BLUE}[Unity -> OpenAI] Sending response create: {truncate_message(json.dumps(create_response_msg))}{Style.RESET_ALL}")
                 await self.openai_ws.send(json.dumps(create_response_msg))
                 

@@ -55,7 +55,6 @@ public class WebSocketClient : MonoBehaviour
         {
             while (webSocket.State == WebSocketState.Open)
             {
-                // Create a buffer to store the received message
                 var receiveResult = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(receiveBuffer),
                     cancellationTokenSource.Token
@@ -63,15 +62,27 @@ public class WebSocketClient : MonoBehaviour
 
                 if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
-                    // Convert the received bytes to a string
-                    string message = Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count);
+                    string rawMessage = Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count);
 
-                    // Log the received message
-                    Debug.Log($"Received message: {message}");
+                    try
+                    {
+                        // Parse the JSON to make sure it's valid
+                        var parsedJson = JsonUtility.FromJson<object>(rawMessage);
+
+                        // Convert back to a formatted string with indentation
+                        string prettyJson = JsonUtility.ToJson(parsedJson, true);
+
+                        // Log the formatted JSON
+                        Debug.Log($"Received JSON:\n{prettyJson}");
+                    }
+                    catch
+                    {
+                        // If JSON parsing fails, just log the raw message
+                        Debug.Log($"Received raw message:\n{rawMessage}");
+                    }
                 }
                 else if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
-                    // Handle WebSocket closure
                     Debug.Log("WebSocket connection closed by server");
                     await CloseConnection();
                     break;

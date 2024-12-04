@@ -264,3 +264,5 @@ crashlytics-build.properties
 .DS_Store
 # Unity assets
 *.assets
+
+/UnityTextBackend/UnityTextRelayBackend
