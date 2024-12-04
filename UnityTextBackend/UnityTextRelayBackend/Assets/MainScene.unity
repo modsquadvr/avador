@@ -237,10 +237,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 304063f1654eb454f8b173197d2c24c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  messageInput: {fileID: 0}
-  sendButton: {fileID: 0}
-  connectButton: {fileID: 0}
-  stopButton: {fileID: 0}
+  messageInput: {fileID: 791977893}
+  sendButton: {fileID: 1321595847}
+  connectButton: {fileID: 1453489142}
+  stopButton: {fileID: 1022816846}
 --- !u!1 &574700341
 GameObject:
   m_ObjectHideFlags: 0
@@ -877,7 +877,7 @@ GameObject:
   - component: {fileID: 1321595848}
   - component: {fileID: 1321595847}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Send
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1213,7 +1213,7 @@ GameObject:
   - component: {fileID: 1453489143}
   - component: {fileID: 1453489142}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Starter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
