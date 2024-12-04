@@ -1,0 +1,126 @@
+WebSocket Server API Documentation
+================================
+
+Server Configuration
+------------------
+Host: 0.0.0.0
+Port: 8000
+Base WebSocket Endpoint: ws://localhost:8000/ws
+
+Architecture Overview
+-------------------
+The server acts as a middleware between clients (Frontend/Unity) and OpenAI's realtime WebSocket API. 
+It handles message relay, connection management, and proper message formatting.
+
+Connection Flow
+-------------
+1. Client connects to ws://localhost:8000/ws
+2. Server accepts the connection and establishes a connection to OpenAI
+3. Bidirectional communication channel is established
+4. Server maintains two parallel streams:
+   - Client <-> Server
+   - Server <-> OpenAI
+
+Message Format
+------------
+1. Client to Server:
+   Send plain text messages as string
+   Example: "Hello, how are you?"
+
+2. Server to OpenAI:
+   The server automatically formats client messages into:
+   {
+       "type": "conversation.item.create",
+       "item": {
+           "type": "message",
+           "role": "user",
+           "content": [{
+               "type": "input_text",
+               "text": "<user_message>"
+           }]
+       }
+   }
+
+3. OpenAI to Client (via Server):
+   The server forwards OpenAI's responses directly to the client.
+   Common message types include:
+   - conversation.item.create
+   - conversation.item.done
+   - response.audio.done
+   - error
+
+Connection Isolation
+------------------
+Each client connection is handled independently:
+
+1. Independent Connections:
+   - Each client (Frontend/Unity) gets its own WebSocket connection
+   - Each client connection creates its own OpenAI connection
+   - No cross-communication between clients by default
+
+2. Message Flow:
+   Client A (e.g., Frontend):
+   - Client A -> Server -> OpenAI -> Server -> Client A
+   
+   Client B (e.g., Unity):
+   - Client B -> Server -> OpenAI -> Server -> Client B
+
+   Note: Messages are not relayed between Client A and Client B.
+   Each client maintains its own isolated conversation with OpenAI.
+
+3. Connection Lifecycle:
+   - Each client connection is independent
+   - Disconnecting one client doesn't affect others
+   - Server maintains separate state for each connection
+   - Resources are cleaned up individually when connections close
+
+Implementation Guide
+------------------
+JavaScript (Frontend):
+using WebSocketSharp;
+
+WebSocket ws = new WebSocket("ws://localhost:8000/ws");
+
+ws.OnOpen += (sender, e) => {
+    Debug.Log("Connected to server");
+};
+
+ws.OnMessage += (sender, e) => {
+    var data = JsonUtility.FromJson<dynamic>(e.Data);
+    // Handle different message types similar to JavaScript
+};
+
+// Send message to server
+ws.Send("Your message here");
+
+
+Error Handling
+------------------
+Connection Errors:
+
+    Server will attempt to close both client and OpenAI connections
+    Clients should implement reconnection logic
+
+Message Errors:
+    - OpenAI errors are forwarded with type: "error"
+    - Network errors will trigger WebSocket close events
+
+------------------
+Best Practices:
+    - Implement heartbeat mechanism to detect connection issues
+    - Handle reconnection scenarios gracefully
+    - Parse all incoming messages as JSON
+    - Implement error handling for all WebSocket events
+    - Monitor message.type field for proper message handling
+
+Rate Limits & Constraints:
+    - Follows OpenAI's rate limiting policies
+    - Single connection per client
+    - Messages are processed in order received
+    - No message size limits enforced by the server (OpenAI limits apply)
+
+------------------
+Security Notes:
+    - Server requires OpenAI API key in environment variables
+    - No built-in authentication (implement as needed)
+    - Messages are not encrypted beyond WebSocket's built-in security

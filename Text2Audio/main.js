@@ -25,7 +25,6 @@ const wsClient = new WebSocketClient(url, headers, (msg) => messageHandler.handl
 const userInput = new UserInputHandler();
 
 async function startConversation() {
-    await wsClient.connect();
     wsClient.send(sessionConfig);
     
     while (true) {
@@ -41,7 +40,4 @@ async function startConversation() {
     }
 }
 
-startConversation().catch(error => {
-    console.error('Error in conversation:', error);
-    process.exit(1);
-});
+startConversation();

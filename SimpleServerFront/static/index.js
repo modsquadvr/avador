@@ -36,6 +36,7 @@ const ws = new WebSocket(`ws://${window.location.host}/ws`);
 
 ws.onopen = () => {
     appendLog('WebSocket connection established');
+    console.log(ws);
 };
 
 ws.onmessage = (event) => {
